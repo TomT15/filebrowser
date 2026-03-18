@@ -34,7 +34,7 @@ func Init() error {
 func initLocked() error {
 	today := time.Now()
 	path := fmt.Sprintf("audit-%s.log", today.Format("20060102"))
-	fullPath := filepath.Join("logs", path)
+	fullPath := filepath.Join(".logs", path)
 
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
