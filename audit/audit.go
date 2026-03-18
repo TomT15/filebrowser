@@ -52,6 +52,19 @@ func initLocked() error {
 
 	out = f
 	currentTime = today
+
+	// If file is new, write header with today's date
+	info, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	if info.Size() == 0 {
+		header := fmt.Sprintf("Audit Log started: %s\n", today.Format(time.RFC3339))
+		if _, err := f.WriteString(header); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -71,12 +84,12 @@ func Close() error {
 func Log(userID uint, action Action, path, oldPath string) error {
 	mu.Lock()
 	defer mu.Unlock()
-	
+
 	if !ValidateTime() {
-	if err := initLocked(); err != nil {
-		return err
+		if err := initLocked(); err != nil {
+			return err
+		}
 	}
-}
 
 	if out == nil {
 		return nil
