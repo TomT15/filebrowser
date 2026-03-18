@@ -5,11 +5,12 @@ import (
 	"os"
 	"path"
 
+	"github.com/filebrowser/filebrowser/v2/users"
 	"github.com/spf13/afero"
 )
 
 // Copy copies a file or folder from one place to another.
-func Copy(afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
+func Copy(user *users.User, afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
 	if src = path.Clean("/" + src); src == "" {
 		return os.ErrNotExist
 	}
@@ -33,8 +34,8 @@ func Copy(afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
 	}
 
 	if info.IsDir() {
-		return CopyDir(afs, src, dst, fileMode, dirMode)
+		return CopyDir(user, afs, src, dst, fileMode, dirMode)
 	}
 
-	return CopyFile(afs, src, dst, fileMode, dirMode)
+	return CopyFile(user, afs, src, dst, fileMode, dirMode)
 }

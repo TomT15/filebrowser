@@ -7,18 +7,20 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/filebrowser/filebrowser/v2/audit"
+	"github.com/filebrowser/filebrowser/v2/users"
 	"github.com/spf13/afero"
 )
 
 // MoveFile moves file from src to dst.
 // By default the rename filesystem system call is used. If src and dst point to different volumes
 // the file copy is used as a fallback
-func MoveFile(afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
+func MoveFile(user *users.User, afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
 	if afs.Rename(src, dst) == nil {
 		return nil
 	}
 	// fallback
-	err := Copy(afs, src, dst, fileMode, dirMode)
+	err := Copy(user, afs, src, dst, fileMode, dirMode)
 	if err != nil {
 		_ = afs.Remove(dst)
 		return err
@@ -26,12 +28,15 @@ func MoveFile(afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) erro
 	if err := afs.RemoveAll(src); err != nil {
 		return err
 	}
+
+	audit.Log(user.ID, audit.ActionMove, src, "")
+
 	return nil
 }
 
 // CopyFile copies a file from source to dest and returns
 // an error if any.
-func CopyFile(afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) error {
+func CopyFile(user *users.User, afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) error {
 	// Open the source file.
 	src, err := afs.Open(source)
 	if err != nil {
@@ -68,6 +73,8 @@ func CopyFile(afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) 
 	if err != nil {
 		return err
 	}
+
+	audit.Log(user.ID, audit.ActionCopy, source, "")
 
 	return nil
 }

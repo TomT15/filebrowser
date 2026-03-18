@@ -17,6 +17,7 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/spf13/afero"
 
+	"github.com/filebrowser/filebrowser/v2/audit"
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/fileutils"
@@ -111,6 +112,8 @@ func resourceDeleteHandler(fileCache FileCache) handleFunc {
 			return d.user.Fs.RemoveAll(r.URL.Path)
 		}, "delete", r.URL.Path, "", d.user)
 
+		audit.Log(d.user.ID, audit.ActionDelete, r.URL.Path, "")
+
 		if err != nil {
 			return errToStatus(err), err
 		}
@@ -166,6 +169,8 @@ func resourcePostHandler(fileCache FileCache) handleFunc {
 			return nil
 		}, "upload", r.URL.Path, "", d.user)
 
+		audit.Log(d.user.ID, audit.ActionUpload, r.URL.Path, "")
+
 		if err != nil {
 			_ = d.user.Fs.RemoveAll(r.URL.Path)
 		}
@@ -202,6 +207,8 @@ var resourcePutHandler = withUser(func(w http.ResponseWriter, r *http.Request, d
 		w.Header().Set("ETag", etag)
 		return nil
 	}, "save", r.URL.Path, "", d.user)
+
+	audit.Log(d.user.ID, audit.ActionSave, r.URL.Path, "")
 
 	return errToStatus(err), err
 })
@@ -253,6 +260,8 @@ func resourcePatchHandler(fileCache FileCache) handleFunc {
 		err = d.RunHook(func() error {
 			return patchAction(r.Context(), action, src, dst, d, fileCache)
 		}, action, src, dst, d.user)
+
+		audit.Log(d.user.ID, audit.Action(action), src, dst)
 
 		return errToStatus(err), err
 	})
@@ -341,7 +350,7 @@ func patchAction(ctx context.Context, action, src, dst string, d *data, fileCach
 			return fberrors.ErrPermissionDenied
 		}
 
-		return fileutils.Copy(d.user.Fs, src, dst, d.settings.FileMode, d.settings.DirMode)
+		return fileutils.Copy(d.user, d.user.Fs, src, dst, d.settings.FileMode, d.settings.DirMode)
 	case "rename":
 		if !d.user.Perm.Rename {
 			return fberrors.ErrPermissionDenied
@@ -367,7 +376,7 @@ func patchAction(ctx context.Context, action, src, dst string, d *data, fileCach
 			return err
 		}
 
-		return fileutils.MoveFile(d.user.Fs, src, dst, d.settings.FileMode, d.settings.DirMode)
+		return fileutils.MoveFile(d.user, d.user.Fs, src, dst, d.settings.FileMode, d.settings.DirMode)
 	default:
 		return fmt.Errorf("unsupported action %s: %w", action, fberrors.ErrInvalidRequestParams)
 	}

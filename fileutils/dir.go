@@ -4,13 +4,14 @@ import (
 	"errors"
 	"io/fs"
 
+	"github.com/filebrowser/filebrowser/v2/users"
 	"github.com/spf13/afero"
 )
 
 // CopyDir copies a directory from source to dest and all
 // of its sub-directories. It doesn't stop if it finds an error
 // during the copy. Returns an error if any.
-func CopyDir(afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) error {
+func CopyDir(user *users.User, afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) error {
 	// Get properties of source.
 	srcinfo, err := afs.Stat(source)
 	if err != nil {
@@ -37,13 +38,13 @@ func CopyDir(afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) e
 
 		if obj.IsDir() {
 			// Create sub-directories, recursively.
-			err = CopyDir(afs, fsource, fdest, fileMode, dirMode)
+			err = CopyDir(user, afs, fsource, fdest, fileMode, dirMode)
 			if err != nil {
 				errs = append(errs, err)
 			}
 		} else {
 			// Perform the file copy.
-			err = CopyFile(afs, fsource, fdest, fileMode, dirMode)
+			err = CopyFile(user, afs, fsource, fdest, fileMode, dirMode)
 			if err != nil {
 				errs = append(errs, err)
 			}
