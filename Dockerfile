@@ -29,8 +29,8 @@ COPY --from=fetcher /etc/mime.types /etc/mime.types
 COPY --from=fetcher /etc/ssl /etc/ssl
 
 # Create data directories, set ownership, and ensure healthcheck script is executable
-RUN mkdir -p /config /database /srv && \
-    chown -R user:user /config /database /srv \
+RUN mkdir -p /config /database /srv /.logs && \
+    chown -R user:user /config /database /srv /.logs \
     && chmod +x /healthcheck.sh
 
 # Define healthcheck script
@@ -39,7 +39,7 @@ HEALTHCHECK --start-period=2s --interval=5s --timeout=3s CMD /healthcheck.sh
 # Set the user, volumes and exposed ports
 USER user
 
-VOLUME /srv /config /database
+VOLUME /srv /config /database /.logs
 
 EXPOSE 80
 

@@ -23,6 +23,7 @@ var (
 	mu          sync.Mutex
 	out         *os.File
 	currentTime time.Time
+	logDir      = "/.logs"
 )
 
 func Init() error {
@@ -34,7 +35,7 @@ func Init() error {
 func initLocked() error {
 	today := time.Now()
 	path := fmt.Sprintf("audit-%s.log", today.Format("20060102"))
-	fullPath := filepath.Join(".logs", path)
+	fullPath := filepath.Join(logDir, path)
 
 	dir := filepath.Dir(fullPath)
 	if err := os.MkdirAll(dir, 0o700); err != nil {

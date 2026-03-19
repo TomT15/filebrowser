@@ -10,13 +10,15 @@ import (
 )
 
 func TestInitLocked(t *testing.T) {
+	logDir = ".logs"
+
 	err := initLocked()
 	if err != nil {
 		t.Fatalf("initLocked failed: %v", err)
 	}
 
 	today := time.Now().Format("20060102")
-	path := filepath.Join(".logs", fmt.Sprintf("audit-%s.log", today))
+	path := filepath.Join(logDir, fmt.Sprintf("audit-%s.log", today))
 
 	// Check file exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
