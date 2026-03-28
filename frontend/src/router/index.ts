@@ -6,6 +6,7 @@ import Files from "@/views/Files.vue";
 import Share from "@/views/Share.vue";
 import Users from "@/views/settings/Users.vue";
 import User from "@/views/settings/User.vue";
+import AuditTrail from "@/views/settings/AuditTrail.vue";
 import Settings from "@/views/Settings.vue";
 import GlobalSettings from "@/views/settings/Global.vue";
 import ProfileSettings from "@/views/settings/Profile.vue";
@@ -27,6 +28,7 @@ const titles = {
   GlobalSettings: "settings.globalSettings",
   Users: "settings.users",
   User: "settings.user",
+  AuditTrail: "settings.auditTrail",
   Forbidden: "errors.forbidden",
   NotFound: "errors.notFound",
   InternalServerError: "errors.internal",
@@ -108,6 +110,14 @@ const routes = [
             path: "users/:id",
             name: "User",
             component: User,
+            meta: {
+              requiresAdmin: true,
+            },
+          }, 
+          {
+            path: "audit-trail",
+            name: "AuditTrail",
+            component: AuditTrail,
             meta: {
               requiresAdmin: true,
             },
